@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我的待办清单</title>
+  <style>
+    :root {
+      --bg: #eef6ff;
+      --card: #ffffff;
+      --primary: #2f80ed;
+      --primary-hover: #1d6fe0;
+      --text: #1f2d3d;
+      --muted: #6e7a8a;
+      --danger: #e94f6a;
+      --shadow: 0 10px 30px rgba(47, 128, 237, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(150deg, #eef7ff 0%, #f2eaff 100%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 680px;
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      color: var(--primary);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .task-input {
+      flex: 1;
+      border: 2px solid #d5e7ff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .task-input:focus {
+      border-color: #8ec2ff;
+      box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.15);
+    }
+
+    .add-btn {
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #fff;
+      padding: 0 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.08s;
+    }
+
+    .add-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .add-btn:active {
+      transform: translateY(1px);
+    }
+
+    .stats {
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 14px;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 14px;
+    }
+
+    .clear-btn {
+      border: none;
+      border-radius: 10px;
+      background: rgba(47, 128, 237, 0.12);
+      color: var(--primary);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+
+    .clear-btn:hover:not(:disabled) {
+      background: rgba(47, 128, 237, 0.2);
+    }
+
+    .clear-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #f7fbff;
+      border: 1px solid #e3efff;
+      border-radius: 12px;
+    }
+
+    .item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .item-text {
+      flex: 1;
+      font-size: 15px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .item-text.done {
+      color: #8a98aa;
+      text-decoration: line-through;
+    }
+
+    .delete-btn {
+      border: none;
+      border-radius: 10px;
+      background: rgba(233, 79, 106, 0.12);
+      color: var(--danger);
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .delete-btn:hover {
+      background: rgba(233, 79, 106, 0.2);
+    }
+
+    .empty {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      padding: 18px;
+      border: 1px dashed #d7e8ff;
+      border-radius: 12px;
+      background: #fafdff;
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        padding: 18px;
+        border-radius: 14px;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+
+      .input-row {
+        flex-direction: column;
+      }
+
+      .add-btn {
+        padding: 12px;
+      }
+
+      .item {
+        align-items: flex-start;
+      }
+
+      .delete-btn {
+        align-self: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1>📝 我的待办清单</h1>
+    <div class="input-row">
+      <input id="taskInput" class="task-input" type="text" placeholder="今天要做什么？" />
+      <button id="addBtn" class="add-btn">➕ 添加任务</button>
+    </div>
+    <div class="stats">
+      <span id="pendingCount">未完成：0</span>
+      <span id="completedCount">已完成：0</span>
+    </div>
+    <div class="actions">
+      <button id="clearCompletedBtn" class="clear-btn">清空已完成</button>
+    </div>
+    <ul id="taskList" class="list"></ul>
+    <p id="emptyText" class="empty">还没有任务，快添加一个吧。</p>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "todo_items_v1";
+    const taskInput = document.getElementById("taskInput");
+    const addBtn = document.getElementById("addBtn");
+    const taskList = document.getElementById("taskList");
+    const pendingCount = document.getElementById("pendingCount");
+    const completedCount = document.getElementById("completedCount");
+    const clearCompletedBtn = document.getElementById("clearCompletedBtn");
+    const emptyText = document.getElementById("emptyText");
+
+    let tasks = loadTasks();
+
+    function loadTasks() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveTasks() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    function createTask(text) {
+      return {
+        id: Date.now() + Math.random().toString(16).slice(2),
+        text,
+        done: false
+      };
+    }
+
+    function addTask() {
+      const text = taskInput.value.trim();
+      if (!text) return;
+      tasks.unshift(createTask(text));
+      taskInput.value = "";
+      saveTasks();
+      render();
+      taskInput.focus();
+    }
+
+    function toggleTask(id) {
+      tasks = tasks.map((task) =>
+        task.id === id ? { ...task, done: !task.done } : task
+      );
+      saveTasks();
+      render();
+    }
+
+    function removeTask(id) {
+      tasks = tasks.filter((task) => task.id !== id);
+      saveTasks();
+      render();
+    }
+
+    function clearCompletedTasks() {
+      tasks = tasks.filter((task) => !task.done);
+      saveTasks();
+      render();
+    }
+
+    function updateStats() {
+      const completed = tasks.filter((task) => task.done).length;
+      const pending = tasks.length - completed;
+      pendingCount.textContent = `未完成：${pending}`;
+      completedCount.textContent = `已完成：${completed}`;
+      clearCompletedBtn.disabled = completed === 0;
+      emptyText.style.display = tasks.length === 0 ? "block" : "none";
+    }
+
+    function render() {
+      taskList.innerHTML = "";
+      tasks.forEach((task) => {
+        const li = document.createElement("li");
+        li.className = "item";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.done;
+        checkbox.addEventListener("change", () => toggleTask(task.id));
+
+        const text = document.createElement("span");
+        text.className = `item-text ${task.done ? "done" : ""}`;
+        text.textContent = task.text;
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "delete-btn";
+        delBtn.textContent = "删除";
+        delBtn.addEventListener("click", () => removeTask(task.id));
+
+        li.append(checkbox, text, delBtn);
+        taskList.appendChild(li);
+      });
+
+      updateStats();
+    }
+
+    addBtn.addEventListener("click", addTask);
+    taskInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") addTask();
+    });
+    clearCompletedBtn.addEventListener("click", clearCompletedTasks);
+
+    render();
+  </script>
+</body>
+</html>

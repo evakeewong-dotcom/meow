@@ -1,0 +1,410 @@
+<!doctype html>
+<!-- 声明：使用 HTML5 标准 -->
+<html lang="zh-CN">
+<!-- 根节点，页面语言设置为简体中文 -->
+<head>
+  <!-- 文档头：放元信息、标题、样式 -->
+  <meta charset="UTF-8" />
+  <!-- 使用 UTF-8，避免中文乱码 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- 移动端适配：按设备宽度渲染，初始缩放为 1 -->
+  <title>我的待办清单（注释版）</title>
+  <!-- 浏览器标签标题 -->
+
+  <style>
+    /* ==================== 全局主题变量 ==================== */
+    :root {
+      --bg: #eef6ff; /* 页面背景基色 */
+      --card: #ffffff; /* 主卡片背景 */
+      --primary: #2f80ed; /* 主蓝色（按钮/标题） */
+      --primary-hover: #1d6fe0; /* 主色 hover */
+      --text: #1f2d3d; /* 主要文字颜色 */
+      --muted: #6e7a8a; /* 次要文字颜色 */
+      --danger: #e94f6a; /* 删除按钮颜色 */
+      --shadow: 0 10px 30px rgba(47, 128, 237, 0.15); /* 卡片阴影 */
+    }
+
+    /* 所有元素使用 border-box 盒模型（更好算宽高） */
+    * {
+      box-sizing: border-box;
+    }
+
+    /* 页面基础布局：整个页面居中显示一个卡片 */
+    body {
+      margin: 0; /* 去掉浏览器默认外边距 */
+      min-height: 100vh; /* 最小高度为整个视口高度 */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif; /* 系统字体栈 */
+      background: linear-gradient(150deg, #eef7ff 0%, #f2eaff 100%); /* 蓝紫渐变背景 */
+      color: var(--text); /* 默认文字颜色 */
+      display: flex; /* 使用 flex 做居中 */
+      align-items: center; /* 垂直居中 */
+      justify-content: center; /* 水平居中 */
+      padding: 24px 16px; /* 页面留白，避免贴边 */
+    }
+
+    /* 主应用卡片 */
+    .app {
+      width: 100%; /* 小屏可铺满 */
+      max-width: 680px; /* 大屏限制最大宽度 */
+      background: var(--card); /* 卡片底色 */
+      border-radius: 18px; /* 圆角 */
+      box-shadow: var(--shadow); /* 阴影 */
+      padding: 24px; /* 内边距 */
+    }
+
+    /* 标题样式 */
+    h1 {
+      margin: 0 0 18px; /* 下方留白 */
+      color: var(--primary); /* 主色 */
+      font-size: 28px; /* 字号 */
+      font-weight: 700; /* 加粗 */
+      letter-spacing: 0.5px; /* 微调字间距 */
+    }
+
+    /* 输入区：输入框 + 按钮并排 */
+    .input-row {
+      display: flex;
+      gap: 10px; /* 两者间距 */
+      margin-bottom: 18px;
+    }
+
+    /* 输入框 */
+    .task-input {
+      flex: 1; /* 占据剩余空间 */
+      border: 2px solid #d5e7ff;
+      border-radius: 12px; /* 圆角 */
+      padding: 12px 14px;
+      font-size: 16px;
+      outline: none; /* 去默认高亮轮廓 */
+      transition: border-color 0.2s, box-shadow 0.2s; /* 平滑过渡 */
+    }
+
+    /* 输入框聚焦效果 */
+    .task-input:focus {
+      border-color: #8ec2ff;
+      box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.15);
+    }
+
+    /* 添加按钮 */
+    .add-btn {
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #fff;
+      padding: 0 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.08s;
+    }
+
+    .add-btn:hover {
+      background: var(--primary-hover); /* 悬停变深 */
+    }
+
+    .add-btn:active {
+      transform: translateY(1px); /* 按下有轻微下沉感 */
+    }
+
+    /* 统计行：已完成与未完成 */
+    .stats {
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 14px;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* 操作区：放“清空已完成”按钮 */
+    .actions {
+      display: flex;
+      justify-content: flex-end; /* 按钮靠右 */
+      margin-bottom: 14px;
+    }
+
+    /* 清空已完成按钮 */
+    .clear-btn {
+      border: none;
+      border-radius: 10px;
+      background: rgba(47, 128, 237, 0.12);
+      color: var(--primary);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+
+    .clear-btn:hover:not(:disabled) {
+      background: rgba(47, 128, 237, 0.2);
+    }
+
+    .clear-btn:disabled {
+      opacity: 0.45; /* 无已完成任务时弱化按钮 */
+      cursor: not-allowed;
+    }
+
+    /* 任务列表容器 */
+    .list {
+      list-style: none; /* 去圆点 */
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    /* 单条任务 */
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #f7fbff;
+      border: 1px solid #e3efff;
+      border-radius: 12px;
+    }
+
+    /* 任务前的复选框 */
+    .item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary); /* 复选框主题色 */
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* 任务文本 */
+    .item-text {
+      flex: 1; /* 占满中间空间 */
+      font-size: 15px;
+      line-height: 1.45;
+      word-break: break-word; /* 长词换行 */
+    }
+
+    /* 已完成任务：灰色 + 删除线 */
+    .item-text.done {
+      color: #8a98aa;
+      text-decoration: line-through;
+    }
+
+    /* 删除按钮 */
+    .delete-btn {
+      border: none;
+      border-radius: 10px;
+      background: rgba(233, 79, 106, 0.12);
+      color: var(--danger);
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .delete-btn:hover {
+      background: rgba(233, 79, 106, 0.2);
+    }
+
+    /* 空列表提示 */
+    .empty {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      padding: 18px;
+      border: 1px dashed #d7e8ff;
+      border-radius: 12px;
+      background: #fafdff;
+    }
+
+    /* ==================== 响应式：手机端优化 ==================== */
+    @media (max-width: 560px) {
+      .app {
+        padding: 18px;
+        border-radius: 14px;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+
+      .input-row {
+        flex-direction: column; /* 手机上改成上下排列 */
+      }
+
+      .add-btn {
+        padding: 12px;
+      }
+
+      .item {
+        align-items: flex-start;
+      }
+
+      .delete-btn {
+        align-self: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 应用主区域 -->
+  <main class="app">
+    <!-- 标题 -->
+    <h1>📝 我的待办清单</h1>
+
+    <!-- 输入区：输入任务 + 添加按钮 -->
+    <div class="input-row">
+      <input id="taskInput" class="task-input" type="text" placeholder="今天要做什么？" />
+      <button id="addBtn" class="add-btn">➕ 添加任务</button>
+    </div>
+
+    <!-- 统计区 -->
+    <div class="stats">
+      <span id="pendingCount">未完成：0</span>
+      <span id="completedCount">已完成：0</span>
+    </div>
+
+    <!-- 清空所有“已完成”任务 -->
+    <div class="actions">
+      <button id="clearCompletedBtn" class="clear-btn">清空已完成</button>
+    </div>
+
+    <!-- 任务列表（JS 动态插入 li） -->
+    <ul id="taskList" class="list"></ul>
+
+    <!-- 当任务为空时显示 -->
+    <p id="emptyText" class="empty">还没有任务，快添加一个吧。</p>
+  </main>
+
+  <script>
+    // localStorage 键名：用于保存/读取任务列表
+    const STORAGE_KEY = "todo_items_v1";
+
+    // 获取页面元素，后续要频繁操作它们
+    const taskInput = document.getElementById("taskInput");
+    const addBtn = document.getElementById("addBtn");
+    const taskList = document.getElementById("taskList");
+    const pendingCount = document.getElementById("pendingCount");
+    const completedCount = document.getElementById("completedCount");
+    const clearCompletedBtn = document.getElementById("clearCompletedBtn");
+    const emptyText = document.getElementById("emptyText");
+
+    // 初始化任务数据：优先从本地存储读取
+    let tasks = loadTasks();
+
+    // 读取本地存储中的任务数组
+    function loadTasks() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY); // 读取字符串
+        return saved ? JSON.parse(saved) : []; // 转为数组，不存在则空数组
+      } catch (error) {
+        // 若 JSON 格式损坏或读取异常，降级为空数组
+        return [];
+      }
+    }
+
+    // 将 tasks 数组写回本地存储
+    function saveTasks() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    // 创建单个任务对象
+    function createTask(text) {
+      return {
+        id: Date.now() + Math.random().toString(16).slice(2), // 生成近似唯一 id
+        text, // 任务内容
+        done: false // 默认未完成
+      };
+    }
+
+    // 添加任务：输入框 -> tasks -> 保存 -> 重绘
+    function addTask() {
+      const text = taskInput.value.trim(); // 去首尾空格
+      if (!text) return; // 空内容不添加
+      tasks.unshift(createTask(text)); // 新任务放最前面
+      taskInput.value = ""; // 清空输入框
+      saveTasks(); // 持久化
+      render(); // 重新渲染列表
+      taskInput.focus(); // 光标回到输入框
+    }
+
+    // 切换某条任务完成状态（保留任务并显示删除线）
+    function toggleTask(id) {
+      tasks = tasks.map((task) =>
+        task.id === id ? { ...task, done: !task.done } : task
+      );
+      saveTasks();
+      render();
+    }
+
+    // 删除某条任务
+    function removeTask(id) {
+      tasks = tasks.filter((task) => task.id !== id);
+      saveTasks();
+      render();
+    }
+
+    // 一键删除所有已完成任务
+    function clearCompletedTasks() {
+      tasks = tasks.filter((task) => !task.done);
+      saveTasks();
+      render();
+    }
+
+    // 更新统计文本与空状态显示
+    function updateStats() {
+      const completed = tasks.filter((task) => task.done).length; // 已完成数
+      const pending = tasks.length - completed; // 未完成数
+      pendingCount.textContent = `未完成：${pending}`;
+      completedCount.textContent = `已完成：${completed}`;
+      clearCompletedBtn.disabled = completed === 0; // 没有已完成任务时禁用按钮
+      emptyText.style.display = tasks.length === 0 ? "block" : "none";
+    }
+
+    // 渲染整个任务列表
+    function render() {
+      taskList.innerHTML = ""; // 每次先清空，再根据 tasks 重建
+
+      tasks.forEach((task) => {
+        const li = document.createElement("li");
+        li.className = "item";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.done;
+        checkbox.addEventListener("change", () => toggleTask(task.id));
+
+        const text = document.createElement("span");
+        text.className = `item-text ${task.done ? "done" : ""}`;
+        text.textContent = task.text;
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "delete-btn";
+        delBtn.textContent = "删除";
+        delBtn.addEventListener("click", () => removeTask(task.id));
+
+        li.append(checkbox, text, delBtn);
+        taskList.appendChild(li);
+      });
+
+      updateStats(); // 每次渲染后更新统计
+    }
+
+    // 点击“添加”按钮时添加任务
+    addBtn.addEventListener("click", addTask);
+
+    // 输入框按回车时添加任务
+    taskInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") addTask();
+    });
+
+    // 点击“清空已完成”按钮
+    clearCompletedBtn.addEventListener("click", clearCompletedTasks);
+
+    // 首次加载页面：渲染本地存储中的任务
+    render();
+  </script>
+</body>
+</html>
