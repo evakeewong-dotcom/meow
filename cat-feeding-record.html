@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>王宝珠喂食每日记录</title>
+  <style>
+    :root {
+      --pink-50: #fff5f9;
+      --pink-100: #ffe6f0;
+      --pink-200: #ffc9dc;
+      --pink-400: #f27fb0;
+      --pink-500: #ea5a9b;
+      --pink-700: #c13e78;
+      --text-main: #4a2a3a;
+      --text-sub: #7a5a68;
+      --card-shadow: 0 10px 30px rgba(234, 90, 155, 0.15);
+      --radius-lg: 18px;
+      --radius-md: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(160deg, var(--pink-50), #fff);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .app {
+      width: min(920px, 100%);
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: var(--card-shadow);
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--pink-50);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: inset 0 0 0 1px rgba(242, 127, 176, 0.15);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      color: var(--pink-700);
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      color: var(--text-sub);
+      font-size: 14px;
+    }
+
+    .today-total {
+      background: #fff;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 16px rgba(234, 90, 155, 0.12);
+      text-align: center;
+    }
+
+    .today-total .label {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+
+    .today-total .value {
+      margin-top: 6px;
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--pink-700);
+      line-height: 1;
+    }
+
+    .max-feed-setting {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+
+    .max-feed-setting input {
+      width: 38px;
+      border: 1px solid var(--pink-200);
+      border-radius: 10px;
+      padding: 3px 3px;
+      font-size: 12px;
+      height: 28px;
+      line-height: 1;
+      outline: none;
+      background: #fff;
+      color: var(--text-main);
+    }
+
+    .max-feed-setting button {
+      padding: 8px 14px;
+      font-size: 13px;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .input-unit {
+      display: inline-block;
+      align-items: center;
+      justify-content: center;
+      min-width: auto;
+      padding: 0;
+      border-radius: 0;
+      border: 0;
+      background: transparent;
+      color: var(--text-sub);
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1;
+      box-shadow: none;
+    }
+
+    input[type="number"] {
+      flex: 1;
+      border: 1px solid var(--pink-200);
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 15px;
+      outline: none;
+      background: #fff;
+      color: var(--text-main);
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--pink-400);
+      box-shadow: 0 0 0 4px rgba(242, 127, 176, 0.2);
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      background: linear-gradient(135deg, var(--pink-500), var(--pink-700));
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 16px rgba(193, 62, 120, 0.25);
+      transition: transform 0.12s ease, box-shadow 0.2s ease;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(193, 62, 120, 0.28);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .ghost-btn {
+      background: #fff;
+      color: var(--pink-700);
+      border: 1px solid var(--pink-200);
+      box-shadow: 0 4px 10px rgba(234, 90, 155, 0.14);
+    }
+
+    .ghost-btn:hover {
+      box-shadow: 0 6px 12px rgba(234, 90, 155, 0.18);
+    }
+
+    .helper {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-sub);
+      min-height: 18px;
+    }
+
+    .cat-stage {
+      margin-top: 16px;
+      background: #fff;
+      border-radius: var(--radius-md);
+      padding: 14px;
+      box-shadow: 0 6px 16px rgba(234, 90, 155, 0.12);
+    }
+
+    .cat-scene {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 12px;
+      min-height: 125px;
+    }
+
+    .cat-photo-wrap {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 3px solid var(--pink-100);
+      box-shadow: 0 8px 18px rgba(234, 90, 155, 0.2);
+      transform-origin: 50% 85%;
+    }
+
+    .cat-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 22%;
+      transform: scale(1.18);
+      display: block;
+    }
+
+    .food-area {
+      position: relative;
+      flex: 0 0 150px;
+      min-height: 85px;
+      padding-bottom: 8px;
+    }
+
+    .food-bowl {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 84px;
+      height: 34px;
+      border-radius: 0 0 22px 22px;
+      background: linear-gradient(180deg, #ffb3d0, #ea5a9b);
+      box-shadow: 0 8px 14px rgba(193, 62, 120, 0.26);
+      overflow: hidden;
+      transform: translateX(-50%);
+    }
+
+    .food-bowl::before {
+      content: "";
+      position: absolute;
+      left: -4px;
+      right: -4px;
+      top: -7px;
+      height: 12px;
+      border-radius: 8px;
+      background: #ffd8e8;
+      border: 1px solid rgba(193, 62, 120, 0.22);
+      z-index: 2;
+    }
+
+    .food-fill {
+      position: absolute;
+      left: 7px;
+      right: 7px;
+      bottom: 2px;
+      height: 0%;
+      border-radius: 10px 10px 14px 14px;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.16) 0 20%, transparent 21%),
+        radial-gradient(circle at 65% 65%, rgba(255, 255, 255, 0.12) 0 18%, transparent 19%),
+        radial-gradient(circle at 45% 35%, rgba(255, 255, 255, 0.1) 0 14%, transparent 15%),
+        repeating-radial-gradient(circle at 50% 50%, #b07b54 0 4px, #8f6447 4px 8px);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.16);
+      transition: height 0.35s ease;
+      z-index: 1;
+    }
+
+    .food-grams {
+      position: absolute;
+      left: 50%;
+      bottom: 8px;
+      transform: translateX(58px);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--pink-700);
+      white-space: nowrap;
+    }
+
+    .kibble {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #8f6447;
+      opacity: 0;
+    }
+
+    .kibble.k1 { left: calc(50% - 26px); bottom: 26px; }
+    .kibble.k2 { left: calc(50% - 10px); bottom: 30px; }
+    .kibble.k3 { left: calc(50% + 6px); bottom: 27px; }
+    .kibble.k4 { left: calc(50% + 20px); bottom: 29px; }
+
+    .cat-status {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .cat-stage.eating .cat-photo-wrap {
+      animation: catEatNod 0.5s ease-in-out 4;
+    }
+
+    .cat-stage.eating .food-bowl {
+      animation: bowlBounce 0.45s ease-in-out 4;
+    }
+
+    .cat-stage.eating .food-fill {
+      animation: foodJiggle 0.45s ease-in-out 4;
+    }
+
+    .cat-stage.eating .kibble {
+      animation: kibblePop 0.6s ease-in-out infinite;
+    }
+
+    .cat-stage.eating .k1 { animation-delay: 0.02s; }
+    .cat-stage.eating .k2 { animation-delay: 0.14s; }
+    .cat-stage.eating .k3 { animation-delay: 0.22s; }
+    .cat-stage.eating .k4 { animation-delay: 0.31s; }
+
+    @keyframes catEatNod {
+      0% { transform: rotate(0deg) translateY(0); }
+      50% { transform: rotate(5deg) translateY(2px); }
+      100% { transform: rotate(0deg) translateY(0); }
+    }
+
+    @keyframes bowlBounce {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+      100% { transform: translateY(0); }
+    }
+
+    @keyframes kibblePop {
+      0% { opacity: 0; transform: translateY(7px) scale(0.5); }
+      40% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-8px) scale(0.7); }
+    }
+
+    @keyframes foodJiggle {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-1px); }
+      100% { transform: translateY(0); }
+    }
+
+    .calendar-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-weight: 600;
+      color: var(--pink-700);
+    }
+
+    .calendar-head button {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .weekdays,
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .weekdays div {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-sub);
+      padding: 4px 0;
+    }
+
+    .day {
+      background: #fff;
+      border-radius: 10px;
+      min-height: 68px;
+      padding: 8px 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 10px rgba(234, 90, 155, 0.1);
+      border: 1px solid rgba(255, 201, 220, 0.75);
+    }
+
+    .day.empty {
+      background: transparent;
+      box-shadow: none;
+      border: 1px dashed rgba(255, 201, 220, 0.5);
+    }
+
+    .day .date {
+      font-size: 12px;
+      color: var(--text-sub);
+      text-align: right;
+    }
+
+    .day .feed {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--pink-700);
+      text-align: left;
+      word-break: break-word;
+      line-height: 1.25;
+    }
+
+    .day.today {
+      border: 2px solid var(--pink-400);
+    }
+
+    .history-wrap {
+      margin-top: 14px;
+      background: #fff;
+      border-radius: var(--radius-md);
+      padding: 12px;
+      box-shadow: 0 6px 16px rgba(234, 90, 155, 0.12);
+    }
+
+    .history-title {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: var(--pink-700);
+      font-weight: 700;
+    }
+
+    .history-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+      max-height: 200px;
+      overflow: auto;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-main);
+      background: var(--pink-50);
+      border: 1px solid rgba(255, 201, 220, 0.65);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .history-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .history-delete {
+      border: 1px solid var(--pink-200);
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: #fff;
+      color: var(--pink-700);
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: none;
+      cursor: pointer;
+    }
+
+    .history-delete:hover {
+      transform: none;
+      box-shadow: 0 4px 10px rgba(234, 90, 155, 0.16);
+    }
+
+    .history-time {
+      color: var(--text-sub);
+      white-space: nowrap;
+    }
+
+    .history-grams {
+      color: var(--pink-700);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .history-empty {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    @media (max-width: 820px) {
+      .app {
+        grid-template-columns: 1fr;
+        padding: 16px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .today-total .value {
+        font-size: 30px;
+      }
+    }
+
+    @media (max-width: 460px) {
+      body {
+        padding: 12px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      .input-group {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      .day {
+        min-height: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="panel">
+      <h1>王宝珠喂食记录 😺</h1>
+      <p class="subtitle">记录每天喂粮，自动累计并保存到本地。</p>
+
+      <div class="today-total">
+        <div class="label">今日总喂食</div>
+        <div class="value"><span id="todayTotal">0</span> g</div>
+        <div class="max-feed-setting">
+          <span>每日最大食量：</span>
+          <input id="maxFeedInput" type="number" min="1" step="1" placeholder="50" />
+          <span>g</span>
+          <button id="saveMaxFeedBtn" class="ghost-btn" type="button">保存上限</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <input id="feedInput" type="number" min="0" step="1" placeholder="输入本次喂食克数" />
+        <span class="input-unit" aria-hidden="true">克</span>
+        <button id="addBtn" type="button">添加记录</button>
+        <button id="resetBtn" class="ghost-btn" type="button">一键清零</button>
+      </div>
+      <div class="helper" id="helperText"></div>
+      <div class="cat-stage" id="catStage">
+        <div class="cat-scene">
+          <div class="cat-photo-wrap">
+            <img
+              class="cat-photo"
+              src="/Users/wangyaqi/.cursor/projects/Users-wangyaqi-Desktop-cursor/assets/258c11b5b9d34708a3709292261d218c-6ee82efe-e013-4ba4-b2a0-a741e9ed5785.png"
+              alt="吃饭中的王宝珠"
+            />
+          </div>
+          <div class="food-area" aria-hidden="true">
+            <div class="food-bowl">
+              <div class="food-fill" id="foodFill"></div>
+            </div>
+            <div class="food-grams" id="foodGrams">粮食 0 g</div>
+            <span class="kibble k1"></span>
+            <span class="kibble k2"></span>
+            <span class="kibble k3"></span>
+            <span class="kibble k4"></span>
+          </div>
+        </div>
+        <div class="cat-status" id="catStatus">王宝珠正在等开饭...</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="calendar-head">
+        <button id="prevMonth" type="button">上个月</button>
+        <span id="monthLabel"></span>
+        <button id="nextMonth" type="button">下个月</button>
+      </div>
+
+      <div class="weekdays">
+        <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div>
+      </div>
+      <div class="days" id="calendarDays"></div>
+
+      <div class="history-wrap">
+        <h2 class="history-title">喂食明细历史</h2>
+        <ul class="history-list" id="historyList"></ul>
+        <p class="history-empty" id="historyEmpty">还没有喂食记录。</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = "catFeedingRecord_v1";
+      const todayTotalEl = document.getElementById("todayTotal");
+      const feedInputEl = document.getElementById("feedInput");
+      const addBtnEl = document.getElementById("addBtn");
+      const resetBtnEl = document.getElementById("resetBtn");
+      const maxFeedInputEl = document.getElementById("maxFeedInput");
+      const saveMaxFeedBtnEl = document.getElementById("saveMaxFeedBtn");
+      const helperTextEl = document.getElementById("helperText");
+      const monthLabelEl = document.getElementById("monthLabel");
+      const calendarDaysEl = document.getElementById("calendarDays");
+      const prevMonthEl = document.getElementById("prevMonth");
+      const nextMonthEl = document.getElementById("nextMonth");
+      const historyListEl = document.getElementById("historyList");
+      const historyEmptyEl = document.getElementById("historyEmpty");
+      const catStageEl = document.getElementById("catStage");
+      const catStatusEl = document.getElementById("catStatus");
+      const foodFillEl = document.getElementById("foodFill");
+      const foodGramsEl = document.getElementById("foodGrams");
+      const DEFAULT_DAILY_MAX_GRAMS = 50;
+      let eatAnimationTimer = null;
+
+      function formatDateKey(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return y + "-" + m + "-" + d;
+      }
+
+      function loadData() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            return {
+              lastDate: formatDateKey(new Date()),
+              totals: {},
+              entries: [],
+              dailyMaxGrams: DEFAULT_DAILY_MAX_GRAMS
+            };
+          }
+          const parsed = JSON.parse(raw);
+          const parsedDailyMax = Number(parsed.dailyMaxGrams);
+          return {
+            lastDate: typeof parsed.lastDate === "string" ? parsed.lastDate : formatDateKey(new Date()),
+            totals: parsed.totals && typeof parsed.totals === "object" ? parsed.totals : {},
+            entries: Array.isArray(parsed.entries) ? parsed.entries : [],
+            dailyMaxGrams: Number.isFinite(parsedDailyMax) && parsedDailyMax > 0
+              ? parsedDailyMax
+              : DEFAULT_DAILY_MAX_GRAMS
+          };
+        } catch (error) {
+          return {
+            lastDate: formatDateKey(new Date()),
+            totals: {},
+            entries: [],
+            dailyMaxGrams: DEFAULT_DAILY_MAX_GRAMS
+          };
+        }
+      }
+
+      function saveData(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }
+
+      function normalizeForNewDay(data) {
+        const todayKey = formatDateKey(new Date());
+        if (data.lastDate !== todayKey) {
+          data.lastDate = todayKey;
+          if (typeof data.totals[todayKey] !== "number") {
+            data.totals[todayKey] = 0;
+          }
+          saveData(data);
+        }
+      }
+
+      function getTodayTotal(data) {
+        const todayKey = formatDateKey(new Date());
+        const val = data.totals[todayKey];
+        return typeof val === "number" ? val : 0;
+      }
+
+      function updateTodayTotalUI(data) {
+        const total = getTodayTotal(data);
+        todayTotalEl.textContent = String(total);
+        updateFoodBowlUI(total);
+      }
+
+      function updateFoodBowlUI(todayTotal) {
+        const safeTotal = Number.isFinite(todayTotal) ? Math.max(0, todayTotal) : 0;
+        const dailyMax = Number.isFinite(data.dailyMaxGrams) && data.dailyMaxGrams > 0
+          ? data.dailyMaxGrams
+          : DEFAULT_DAILY_MAX_GRAMS;
+        const ratio = Math.min(1, safeTotal / dailyMax);
+        const minVisibleHeight = safeTotal > 0 ? 12 : 0;
+        const fillPercent = Math.max(minVisibleHeight, Math.round(ratio * 100));
+        foodFillEl.style.height = fillPercent + "%";
+        foodGramsEl.textContent = "粮食 " + safeTotal + " / " + dailyMax + " g";
+      }
+
+      function showHelper(msg, isError) {
+        helperTextEl.textContent = msg;
+        helperTextEl.style.color = isError ? "#c13e78" : "#7a5a68";
+      }
+
+      function formatDateTime(datetimeValue) {
+        const date = new Date(datetimeValue);
+        if (!Number.isFinite(date.getTime())) {
+          return "时间未知";
+        }
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        const hh = String(date.getHours()).padStart(2, "0");
+        const mm = String(date.getMinutes()).padStart(2, "0");
+        return y + "-" + m + "-" + d + " " + hh + ":" + mm;
+      }
+
+      function renderHistory(data) {
+        historyListEl.innerHTML = "";
+        const entries = Array.isArray(data.entries)
+          ? data.entries.map(function (item, index) {
+              return { item: item, index: index };
+            }).reverse()
+          : [];
+
+        if (!entries.length) {
+          historyEmptyEl.style.display = "block";
+          return;
+        }
+
+        historyEmptyEl.style.display = "none";
+
+        for (let i = 0; i < entries.length; i += 1) {
+          const row = entries[i];
+          const item = row.item;
+          if (!item || typeof item.grams !== "number") {
+            continue;
+          }
+
+          const li = document.createElement("li");
+          li.className = "history-item";
+          li.dataset.index = String(row.index);
+
+          const mainEl = document.createElement("div");
+          mainEl.className = "history-main";
+
+          const timeEl = document.createElement("span");
+          timeEl.className = "history-time";
+          timeEl.textContent = formatDateTime(item.time);
+
+          const gramsEl = document.createElement("span");
+          gramsEl.className = "history-grams";
+          gramsEl.textContent = "+" + item.grams + " g";
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.className = "history-delete";
+          deleteBtn.textContent = "删除";
+
+          mainEl.appendChild(timeEl);
+          mainEl.appendChild(gramsEl);
+          mainEl.appendChild(deleteBtn);
+          li.appendChild(mainEl);
+          historyListEl.appendChild(li);
+        }
+      }
+
+      function playEatingAnimation() {
+        catStageEl.classList.remove("eating");
+        if (eatAnimationTimer) {
+          clearTimeout(eatAnimationTimer);
+        }
+
+        catStatusEl.textContent = "王宝珠正在开心干饭！";
+        void catStageEl.offsetWidth;
+        catStageEl.classList.add("eating");
+
+        eatAnimationTimer = setTimeout(function () {
+          catStageEl.classList.remove("eating");
+          catStatusEl.textContent = "王宝珠吃饱啦，感谢投喂！";
+        }, 2200);
+      }
+
+      function renderCalendar(data, year, month) {
+        const firstDay = new Date(year, month, 1);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const offset = (firstDay.getDay() + 6) % 7;
+        const todayKey = formatDateKey(new Date());
+
+        monthLabelEl.textContent = year + "年" + (month + 1) + "月";
+        calendarDaysEl.innerHTML = "";
+
+        for (let i = 0; i < offset; i += 1) {
+          const empty = document.createElement("div");
+          empty.className = "day empty";
+          calendarDaysEl.appendChild(empty);
+        }
+
+        for (let day = 1; day <= daysInMonth; day += 1) {
+          const cellDate = new Date(year, month, day);
+          const key = formatDateKey(cellDate);
+          const amount = data.totals[key];
+
+          const cell = document.createElement("div");
+          cell.className = "day" + (key === todayKey ? " today" : "");
+
+          const dateEl = document.createElement("div");
+          dateEl.className = "date";
+          dateEl.textContent = String(day);
+
+          const feedEl = document.createElement("div");
+          feedEl.className = "feed";
+          feedEl.textContent = typeof amount === "number" ? amount + " g" : "-";
+
+          cell.appendChild(dateEl);
+          cell.appendChild(feedEl);
+          calendarDaysEl.appendChild(cell);
+        }
+      }
+
+      const data = loadData();
+      normalizeForNewDay(data);
+      updateTodayTotalUI(data);
+      maxFeedInputEl.value = String(data.dailyMaxGrams);
+
+      let currentView = new Date();
+      currentView = new Date(currentView.getFullYear(), currentView.getMonth(), 1);
+      renderCalendar(data, currentView.getFullYear(), currentView.getMonth());
+      renderHistory(data);
+
+      addBtnEl.addEventListener("click", function () {
+        const value = Number(feedInputEl.value);
+        if (!Number.isFinite(value) || value <= 0) {
+          showHelper("请输入大于 0 的喂食克数。", true);
+          return;
+        }
+
+        const todayKey = formatDateKey(new Date());
+        data.totals[todayKey] = (data.totals[todayKey] || 0) + value;
+        data.entries.push({
+          time: new Date().toISOString(),
+          grams: value
+        });
+        data.lastDate = todayKey;
+        saveData(data);
+
+        updateTodayTotalUI(data);
+        renderCalendar(data, currentView.getFullYear(), currentView.getMonth());
+        renderHistory(data);
+        playEatingAnimation();
+        showHelper("已记录 +" + value + "g。", false);
+        feedInputEl.value = "";
+        feedInputEl.focus();
+      });
+
+      saveMaxFeedBtnEl.addEventListener("click", function () {
+        const value = Number(maxFeedInputEl.value);
+        if (!Number.isFinite(value) || value <= 0) {
+          showHelper("每日最大食量请输入大于 0 的数字。", true);
+          return;
+        }
+
+        data.dailyMaxGrams = Math.round(value);
+        saveData(data);
+        updateTodayTotalUI(data);
+        showHelper("已将每日最大食量设置为 " + data.dailyMaxGrams + "g。", false);
+      });
+
+      resetBtnEl.addEventListener("click", function () {
+        const todayKey = formatDateKey(new Date());
+        data.totals[todayKey] = 0;
+        data.entries = data.entries.filter(function (item) {
+          if (!item || !item.time) {
+            return true;
+          }
+          return formatDateKey(new Date(item.time)) !== todayKey;
+        });
+        data.lastDate = todayKey;
+        saveData(data);
+
+        updateTodayTotalUI(data);
+        renderCalendar(data, currentView.getFullYear(), currentView.getMonth());
+        renderHistory(data);
+        catStageEl.classList.remove("eating");
+        catStatusEl.textContent = "今日记录已清零，王宝珠重新等开饭。";
+        showHelper("已清零今日喂食总量和今日明细。", false);
+        feedInputEl.focus();
+      });
+
+      feedInputEl.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          addBtnEl.click();
+        }
+      });
+
+      historyListEl.addEventListener("click", function (event) {
+        const target = event.target;
+        if (!(target instanceof HTMLElement) || !target.classList.contains("history-delete")) {
+          return;
+        }
+
+        const itemEl = target.closest(".history-item");
+        if (!itemEl || typeof itemEl.dataset.index !== "string") {
+          return;
+        }
+
+        const index = Number(itemEl.dataset.index);
+        if (!Number.isInteger(index) || index < 0 || index >= data.entries.length) {
+          return;
+        }
+
+        const removed = data.entries[index];
+        data.entries.splice(index, 1);
+
+        if (removed && typeof removed.grams === "number") {
+          const key = formatDateKey(new Date(removed.time));
+          const currentTotal = typeof data.totals[key] === "number" ? data.totals[key] : 0;
+          data.totals[key] = Math.max(0, currentTotal - removed.grams);
+        }
+
+        saveData(data);
+        updateTodayTotalUI(data);
+        renderCalendar(data, currentView.getFullYear(), currentView.getMonth());
+        renderHistory(data);
+        showHelper("已删除该条记录并退回克数。", false);
+      });
+
+      prevMonthEl.addEventListener("click", function () {
+        currentView = new Date(currentView.getFullYear(), currentView.getMonth() - 1, 1);
+        renderCalendar(data, currentView.getFullYear(), currentView.getMonth());
+      });
+
+      nextMonthEl.addEventListener("click", function () {
+        currentView = new Date(currentView.getFullYear(), currentView.getMonth() + 1, 1);
+        renderCalendar(data, currentView.getFullYear(), currentView.getMonth());
+      });
+    })();
+  </script>
+</body>
+</html>
